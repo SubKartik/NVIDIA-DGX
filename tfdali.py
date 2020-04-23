@@ -72,7 +72,8 @@ if not os.path.isfile(tfrecord_idx):
 # https://docs.nvidia.com/deeplearning/sdk/dali-developer-guide/docs/examples/general/data_loading/dataloading_tfrecord.html
 #
 # Code from Nvidia and 
-# some class methods from James Dellinger's iblog: https://towardsdatascience.com/diving-into-dali-1c30c28731c0 
+# some class methods from James Dellinger's blog: 
+# https://towardsdatascience.com/diving-into-dali-1c30c28731c0 
 # and GitHub https://gist.github.com/jamesdellinger/c4a7aa588f2971a89c01484bb680c4e5
 #
 # ==============================================================================
