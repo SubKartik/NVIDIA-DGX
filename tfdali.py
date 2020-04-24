@@ -31,6 +31,7 @@ import os.path
 from subprocess import call
 from optparse import OptionParser
 import tensorflow as tf
+import sys
 
 parser = OptionParser()
 parser.add_option("-m", "--mode", dest="mode",
@@ -40,9 +41,12 @@ parser.add_option("-q", "--quiet",
                   help="don't print status messages to stdout")
 
 (options, args) = parser.parse_args()
-print("Argument, Processing mode:", args[0],options.mode)
+mode=options.mode
+if mode == "gpu": idmode="mixed"
+if mode == "cpu": idmode="cpu"
 
-import sys
+print("Argument, Processing mode, ImageDeoderMode:", args[0],mode,idmode)
+
 print('Input TFRecord file:',args[0])
 infile=args[0]
 outfile='aug_'+infile
@@ -59,7 +63,7 @@ print('Number of records:',count)
 tfrecord_idx = "idx_files_"+infile+"/train.idx"
 tfrecord2idx_script = "tfrecord2idx"
 
-idx_dir='idx_files_'+infile
+idx_dir="idx_files_"+infile
 if not os.path.exists(idx_dir):
     os.mkdir(idx_dir)
 
@@ -109,14 +113,14 @@ class TFRecordPipeline(Pipeline):
                                          'image/object/bbox/ymax':    tfrec.VarLenFeature(tfrec.float32, 0.0),
                                          'image/object/bbox/label':   tfrec.FixedLenFeature([1], tfrec.int64, -1)})
 
-        self.decode = ops.ImageDecoder(device = "mixed", output_type = types.RGB)
-        self.resize = ops.Resize(device = "gpu", resize_x = 512.,resize_y=512.)
-        self.vert_flip = ops.Flip(device = "gpu", horizontal=0)
+        self.decode = ops.ImageDecoder(device = idmode, output_type = types.RGB)
+        self.resize = ops.Resize(device = mode, resize_x = 512.,resize_y=512.)
+        self.vert_flip = ops.Flip(device = mode, horizontal=0)
         self.vert_coin = ops.CoinFlip(probability=0.5)
-        self.rotate = ops.Rotate(device='gpu', interp_type=types.INTERP_NN)
+        self.rotate = ops.Rotate(device= mode, interp_type=types.INTERP_NN)
         self.rotate_range = ops.Uniform(range = (-7, 7))
         self.rotate_coin = ops.CoinFlip(probability=0.2)
-        self.cmnp = ops.CropMirrorNormalize(device = "gpu",
+        self.cmnp = ops.CropMirrorNormalize(device = mode,
                                             output_dtype = types.FLOAT,
                                             crop = (512, 512),
                                             image_type = types.RGB,
@@ -312,7 +316,9 @@ while True:
 
     images,filenames,heights,widths,colorspaces,channels,iformats,labels,synsets,texts,xmins,ymins,xmaxs,ymaxs,bblabels = pipe_out
 
-    image_batch=images.as_cpu()
+    if mode=="gpu": image_batch=images.as_cpu()
+    if mode=="cpu": image_batch=images
+
     image_tensor=images.as_tensor()
     print('image_tensor shape:', image_tensor.shape(),'iteration:',iteration)
 
