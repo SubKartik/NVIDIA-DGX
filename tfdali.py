@@ -48,7 +48,7 @@ infile=args[0]
 outfile='aug_'+infile
 
 test_data_root = os.environ['DALI_EXTRA_PATH']
-tfrecord = os.path.join(test_data_root, 'db', 'tfrecord', 'train',infile)
+tfrecord = os.path.join(test_data_root,"imagenet-mini",infile)
 print('About to count records...:',tfrecord)
 
 count=0
@@ -299,7 +299,7 @@ pipe.build()
 iteration=0
 done=0
 
-tfrecoutfile=test_data_root+'/db/tfrecord/'+outfile
+tfrecoutfile=test_data_root+"/imagenet-aug/"+outfile
 
 writer=tf.io.TFRecordWriter(tfrecoutfile)
 
