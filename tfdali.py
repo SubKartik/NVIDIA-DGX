@@ -36,12 +36,12 @@ import sys
 parser = OptionParser()
 parser.add_option("-m", "--mode", dest="mode",
                   help="set cpu or gpu mode for NVIDIA DALI", metavar="MODE")
-parser.add_option("-q", "--quiet",
-                  action="store_false", dest="verbose", default=True,
-                  help="don't print status messages to stdout")
+parser.add_option("-d", "--device-id", dest="devid",type="int", 
+                  help="set gpu device ID for NVIDIA DALI pipeline", metavar="DEVID")
 
 (options, args) = parser.parse_args()
 mode=options.mode
+devid=options.devid
 if mode == "gpu": idmode="mixed"
 if mode == "cpu": idmode="cpu"
 
@@ -52,7 +52,7 @@ infile=args[0]
 outfile='aug_'+infile
 
 test_data_root = os.environ['DALI_EXTRA_PATH']
-tfrecord = os.path.join(test_data_root,"imagenet-mini",infile)
+tfrecord = os.path.join(test_data_root,"input",infile)
 print('About to count records...:',tfrecord)
 
 count=0
@@ -114,7 +114,7 @@ class TFRecordPipeline(Pipeline):
                                          'image/object/bbox/label':   tfrec.FixedLenFeature([1], tfrec.int64, -1)})
 
         self.decode = ops.ImageDecoder(device = idmode, output_type = types.RGB)
-        self.resize = ops.Resize(device = mode, resize_x = 512.,resize_y=512.)
+        self.resize = ops.Resize(device = mode, resize_x = 1280.,resize_y=1280.)
         self.vert_flip = ops.Flip(device = mode, horizontal=0)
         self.vert_coin = ops.CoinFlip(probability=0.5)
         self.rotate = ops.Rotate(device= mode, interp_type=types.INTERP_NN)
@@ -122,7 +122,7 @@ class TFRecordPipeline(Pipeline):
         self.rotate_coin = ops.CoinFlip(probability=0.2)
         self.cmnp = ops.CropMirrorNormalize(device = mode,
                                             output_dtype = types.FLOAT,
-                                            crop = (512, 512),
+                                            crop = (1280, 1280),
                                             image_type = types.RGB,
                                             mean = [0., 0., 0.],
                                             std = [1., 1., 1.])
@@ -297,13 +297,13 @@ class ImageCoder(object):
 #
 
 batch_size=8
-pipe=TFRecordPipeline(batch_size=batch_size,num_threads=2,device_id=0)
+pipe=TFRecordPipeline(batch_size=batch_size,num_threads=2,device_id=devid)
 pipe.build()
 
 iteration=0
 done=0
 
-tfrecoutfile=test_data_root+"/imagenet-aug/"+outfile
+tfrecoutfile=test_data_root+"/output/"+outfile
 
 writer=tf.io.TFRecordWriter(tfrecoutfile)
 
