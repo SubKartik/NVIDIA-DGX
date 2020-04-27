@@ -20,9 +20,9 @@ External directories are passed into the container (using docker -v) pointing to
 
 The main program here is tfdali.py which takes one option and an argument. An example of how this is invoked in the container is shown below.
 
-  $python ./tfdali.py --mode [cpu|gpu] input-tfrecord-file
+  $python ./tfdali.py --mode [cpu|gpu] --device-id n input-tfrecord-file
 
-The mode "cpu" instructs all DALI functions to run only on the CPU, while mode "gpu" uses the gpu wherever possible. Note that this only affects the behavior of DALI functions. The Docker container uses tensorflow-gpu so Tensorflow itself uses the GPUs whenever possible independent of the mode chosen. The directory that tfdali.py is invoked in will also be used to create a TFRecord Index directory (idx*).
+The mode "cpu" instructs all DALI functions to run only on the CPU, while mode "gpu" uses the gpu wherever possible. Note that this only affects the behavior of DALI functions. The device-id specifies which GPU DALI should use - integer GPU ID. The Docker container uses tensorflow-gpu so Tensorflow itself uses the GPUs whenever possible independent of the mode chosen. The directory that tfdali.py is invoked in will also be used to create a TFRecord Index directory (idx*).
 
 Please note that the function ImageDecoder() in the python module nvidia.dali.ops cannot be used in "gpu" mode, and only supports "cpu" or "mixed" as per the DALI documentation.The code accounts for this.
 
